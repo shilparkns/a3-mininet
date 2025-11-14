@@ -28,13 +28,14 @@ class NetworkTopo( Topo ):
         h3 = self.addHost('h3', ip='10.0.2.2/24', defaultRoute='via 10.0.2.1')
 
         info('*** Creating links\n')
-        self.addLink(h1, r1, intfName1='h1-eth0', intfName2='r1-eth0')
-
-        self.addLink(r1, r2, intfName1='r1-eth1', intfName2='r2-eth0')
-
-        self.addLink(r2, h3, intfName1='r2-eth1', intfName2='h3-eth0')
-
-        self.addLink(r1, h2, intfName1='r1-eth2', intfName2='h2-eth0')
+        self.addLink(h1, r1, intfName1='h1-eth0', params1={'ip': '10.0.0.1/24'}, 
+                            intfName2='r1-eth0', params2={'ip': '10.0.0.3/24'}) 
+        self.addLink(r1, r2, intfName1='r1-eth1', params1={'ip': '10.0.1.1/24'}, 
+                            intfName2='r2-eth0', params2={'ip': '10.0.1.2/24'}) 
+        self.addLink(r2, h3, intfName1='r2-eth1', params1={'ip': '10.0.2.1/24'}, 
+                            intfName2='h3-eth0', params2={'ip': '10.0.2.2/24'}) 
+        self.addLink(r1, h2, intfName1='r1-eth2', params1={'ip': '10.0.3.4/24'}, 
+                            intfName2 = 'h2-eth0', params2={'ip': '10.0.3.2/24'})
 
         
 
@@ -43,11 +44,12 @@ def exp1():
 
     networkTopo = NetworkTopo()
     net = Mininet(topo = networkTopo, link=TCLink)
-    r1, r2 = net.get('r1', 'r2')
-    h1, h2, h3 = net.get('h1', 'h2', 'h3')
 
     info('*** Starting network\n')
     net.start()
+
+    r1, r2 = net.get('r1', 'r2')
+    h1, h2, h3 = net.get('h1', 'h2', 'h3')
 
     info('*** Setting routes\n')
     # Routes for r1
@@ -65,7 +67,7 @@ def exp1():
     def log_ping(src, dst_ip):
         info(f'*** {src.name} pinging {dst_ip}\n')
         output = src.cmd(f'ping -c 1 {dst_ip}')
-        result_file.write(f'\nPing from {src.name} to {dst_ip}:\n{output}\n')
+        result_file.write(f'\nPing from {src.name} to {dst_ip}: \n{output}\n')
 
     log_ping(h1, '10.0.2.2')  # h1 -> h3
     log_ping(h2, '10.0.2.2')  # h2 -> h3
@@ -76,7 +78,7 @@ def exp1():
 
     info('*** Done. Results saved in result1.txt\n')
 
-    CLI(net)
+    # CLI(net)
     net.stop()
 
 if __name__ == '__main__':
