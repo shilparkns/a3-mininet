@@ -10,8 +10,8 @@ class NetworkTopo( Topo ):
 
         info('*** Adding hosts\n')
         h1 = self.addHost('h1', ip='10.0.0.1/24')
-        h2 = self.addHost('h2', ip='10.0.3.2/24')
-        h3 = self.addHost('h3', ip='10.0.2.2/24')
+        h2 = self.addHost('h2', ip='10.0.0.2/24')
+        h3 = self.addHost('h3', ip='10.0.0.3/24')
 
         info('*** Adding switches\n')
         s1 = self.addSwitch('s1', cls=OVSKernelSwitch, failMode='standalone')
@@ -32,18 +32,31 @@ def exp2():
     net.start()
 
     h1, h2, h3 = net.get('h1', 'h2', 'h3')
-    result_file = open('result1.txt', 'w')
-
-    info('*** Running pings\n')
+    result_file = open('result2.txt', 'w')
 
     def log_ping(src, dst):
-        result = src.cmd('ping -c 1 %s' % dst)
-        result_file.write('Ping from %s to %s:\n%s\n' % (src.name, dst.name, result))
-
+        result = src.cmd('ping -c 1 %s' % dst.IP())
+        result_file.write('### Ping from %s to %s:\n%s\n' % (src.name, dst.name, result))
+        # print('Ping from %s to %s:\n%s\n' % (src.name, dst.name, result))
+    CLI(net)
+    
+    result_file.write('### Running pings before setting the Open Flow rules\n\n')
     log_ping(h1, h3)
     log_ping(h2, h3)
 
     CLI(net)
+
+    result_file.write('### Applying Open Flow rules to switch s1\n')
+    result_file.write('### Command for dropping packets from h2 to h3: \n')
+    result_file.write('sudo ovs-ofctl add-flow s1 "in_port=2,actions=drop"\n\n')
+    result_file.write('### Command for forwarding packets from h1 to h3: \n')
+    result_file.write('sudo ovs-ofctl add-flow s1 "in_port=1,actions=output:3"\n\n')
+
+
+    result_file.write('### Running pings after setting the Open Flow rules\n\n')
+    log_ping(h1, h3)
+    log_ping(h2, h3)
+
     net.stop()
 
 if __name__ == '__main__':

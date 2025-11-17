@@ -1,0 +1,42 @@
+### Running pings before setting the Open Flow rules
+
+### Ping from h1 to h3:
+PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+64 bytes from 10.0.0.3: icmp_seq=1 ttl=64 time=5.13 ms
+
+--- 10.0.0.3 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 5.133/5.133/5.133/0.000 ms
+
+### Ping from h2 to h3:
+PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+64 bytes from 10.0.0.3: icmp_seq=1 ttl=64 time=3.12 ms
+
+--- 10.0.0.3 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 3.122/3.122/3.122/0.000 ms
+
+### Applying Open Flow rules to switch s1
+### Command for dropping packets from h2 to h3: 
+sudo ovs-ofctl add-flow s1 "in_port=2,actions=drop"
+
+### Command for forwarding packets from h1 to h3: 
+sudo ovs-ofctl add-flow s1 "in_port=1,actions=output:3"
+
+### Running pings after setting the Open Flow rules
+
+### Ping from h1 to h3:
+PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+64 bytes from 10.0.0.3: icmp_seq=1 ttl=64 time=1.27 ms
+
+--- 10.0.0.3 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.274/1.274/1.274/0.000 ms
+
+### Ping from h2 to h3:
+PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+
+--- 10.0.0.3 ping statistics ---
+1 packets transmitted, 0 received, 100% packet loss, time 0ms
+
+
